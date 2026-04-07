@@ -119,7 +119,7 @@ export function HomePage() {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-xl h-96 animate-pulse border border-blue-50" />
+              <div key={i} className="bg-white rounded-xl h-64 animate-pulse border border-blue-50" />
             ))}
           </div>
         ) : error ? (

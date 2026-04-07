@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "motion/react";
 import { Calendar, Clock, ExternalLink, ChevronRight } from "lucide-react";
 import { NewsItem } from "../types";
@@ -8,7 +9,7 @@ interface NewsCardProps {
   index: number;
 }
 
-export function NewsCard({ news, index }: NewsCardProps) {
+export const NewsCard = memo(({ news, index }: NewsCardProps) => {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
@@ -17,9 +18,9 @@ export function NewsCard({ news, index }: NewsCardProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
       onClick={handleCardClick}
       className="bg-white border-l-4 border-l-blue-600 border-y border-r border-blue-100 rounded-r-xl p-6 shadow-sm hover:shadow-md transition-all group cursor-pointer flex flex-col h-full"
     >
@@ -64,4 +65,4 @@ export function NewsCard({ news, index }: NewsCardProps) {
       </div>
     </motion.div>
   );
-}
+});
