@@ -19,7 +19,7 @@ export function HomePage() {
     setError(null);
     
     try {
-      const data = await fetchNews();
+      const data = await fetchNews(undefined, 0, isRefresh);
       setNews(data);
     } catch (err: any) {
       console.error("Failed to fetch news:", err);
@@ -60,13 +60,8 @@ export function HomePage() {
     if (!containerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
     
-    // Refresh on scroll up (simplified for web)
-    if (scrollTop < -50 && !refreshing) {
-      loadNews(true);
-    }
-    
     // Load more on scroll down
-    if (scrollHeight - scrollTop <= clientHeight + 200 && !loadingMore && !loading) {
+    if (scrollHeight - scrollTop <= clientHeight + 300 && !loadingMore && !loading && !error) {
       loadMoreNews();
     }
   };

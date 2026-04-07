@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "motion/react";
 import { ChevronLeft, Calendar, Clock, ExternalLink, ShieldCheck, Globe, Info } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -8,12 +8,14 @@ import { NewsItem } from "../types";
 
 export function DetailsPage() {
   const { id } = useParams<{ id: string }>();
-  const [news, setNews] = useState<NewsItem | null>(null);
-  const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  const [news, setNews] = useState<NewsItem | null>(location.state?.news || null);
+  const [loading, setLoading] = useState(!location.state?.news);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const loadNews = async () => {
+    if (news) return; // Already have news from state
     setLoading(true);
     setError(null);
     try {
@@ -33,8 +35,12 @@ export function DetailsPage() {
   };
 
   useEffect(() => {
-    loadNews();
-  }, [id, navigate]);
+    if (!news) {
+      loadNews();
+    } else {
+      setLoading(false);
+    }
+  }, [id, navigate, news]);
 
   if (loading) {
     return (

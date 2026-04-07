@@ -12,7 +12,7 @@ export function NewsCard({ news, index }: NewsCardProps) {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    navigate(`/news/${news.id}`);
+    navigate(`/news/${news.id}`, { state: { news } });
   };
 
   return (

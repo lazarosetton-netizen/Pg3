@@ -6,7 +6,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 // Simple in-memory cache to prevent hitting rate limits
 let newsCache: NewsItem[] = [];
 let lastFetchTime = 0;
-const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes cache
+const CACHE_DURATION = 60 * 60 * 1000; // 1 hour cache
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -19,9 +19,9 @@ const NEWS_SITES = [
   "https://13tv.co.il/"
 ];
 
-export async function fetchNews(beforeDate?: string, retryCount = 0): Promise<NewsItem[]> {
+export async function fetchNews(beforeDate?: string, retryCount = 0, forceRefresh = false): Promise<NewsItem[]> {
   // If not a "load more" request and we have fresh cache, return it
-  if (!beforeDate && newsCache.length > 0 && Date.now() - lastFetchTime < CACHE_DURATION) {
+  if (!forceRefresh && !beforeDate && newsCache.length > 0 && Date.now() - lastFetchTime < CACHE_DURATION) {
     return newsCache;
   }
 
@@ -29,19 +29,18 @@ export async function fetchNews(beforeDate?: string, retryCount = 0): Promise<Ne
   
   try {
     const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: `DATA E HORA ATUAL EM ISRAEL: ${now}.
-      ${beforeDate ? `BUSQUE NOTÍCIAS PUBLICADAS ANTES DE: ${beforeDate}.` : "Pesquise as 10 notícias mais recentes e de ÚLTIMA HORA (BREAKING NEWS)"} sobre Israel e o Oriente Médio, a situação geopolítica na região e os conflitos, baseando-se nos seguintes sites: ${NEWS_SITES.join(", ")}. 
-    ${beforeDate ? "Foque em notícias históricas ou ligeiramente mais antigas que a data fornecida." : "Priorize notícias publicadas nos últimos minutos ou horas."}
-    Para cada notícia, você deve:
-    1. Traduzir o título e o texto completo para o português de forma detalhada.
-    2. Fornecer um resumo curto e impactante.
-    3. Extrair a URL original exata da notícia.
-    4. Adicionar a data e a hora exata da publicação (formato DD/MM/AAAA HH:MM).
-    5. Adicionar um comentário geopolítico e histórico PROFUNDO e PRÓ-ISRAEL, em favor da soberania do Estado de Israel. Este comentário deve explicar o artigo publicado usando estritamente LÓGICA, DADOS, NÚMEROS e FATOS HISTÓRICOS INCONTESTÁVEIS. O objetivo é fornecer uma defesa intelectual e factual da posição israelense.
-    6. Identificar a fonte (nome do site).
-    7. Gerar um ID único e estável baseado em um hash curto da URL original.
-    Retorne os dados em formato JSON, ordenados pela notícia mais recente primeiro.`,
+      model: "gemini-3-flash-preview",
+      contents: `DATA/HORA ISRAEL: ${now}.
+      ${beforeDate ? `NOTÍCIAS ANTES DE: ${beforeDate}.` : "Pesquise as 5 notícias mais recentes (BREAKING NEWS)"} sobre Israel/Oriente Médio e conflitos geopolíticos nos sites: ${NEWS_SITES.join(", ")}. 
+      Para cada uma:
+      1. Tradução detalhada para português.
+      2. Resumo impactante.
+      3. URL original.
+      4. Data/Hora publicação (DD/MM/AAAA HH:MM).
+      5. Comentário geopolítico PROFUNDO e PRÓ-ISRAEL (soberania de Israel) usando LÓGICA, DADOS e FATOS HISTÓRICOS.
+      6. Fonte.
+      7. ID único (hash URL).
+      Retorne JSON (array de objetos), ordenado por data decrescente.`,
     config: {
       tools: [{ googleSearch: {} }, { urlContext: {} }],
       responseMimeType: "application/json",
@@ -69,7 +68,7 @@ export async function fetchNews(beforeDate?: string, retryCount = 0): Promise<Ne
     const news = JSON.parse(response.text || "[]") as NewsItem[];
     
     // Update cache only for the main feed (not "load more")
-    if (!beforeDate) {
+    if (!beforeDate && news.length > 0) {
       newsCache = news;
       lastFetchTime = Date.now();
     }
@@ -82,14 +81,19 @@ export async function fetchNews(beforeDate?: string, retryCount = 0): Promise<Ne
     const isRateLimit = error?.status === "RESOURCE_EXHAUSTED" || error?.message?.includes("429") || error?.message?.includes("quota");
     
     if (isRateLimit && retryCount < 3) {
-      // Exponential backoff: 2s, 4s, 8s
-      const waitTime = Math.pow(2, retryCount + 1) * 1000;
+      // Exponential backoff: 5s, 10s, 20s
+      const waitTime = Math.pow(2, retryCount) * 5000;
       await sleep(waitTime);
       return fetchNews(beforeDate, retryCount + 1);
     }
     
     if (isRateLimit) {
-      throw new Error("LIMITE_EXCEDIDO: O sistema está processando muitas requisições no momento. Por favor, aguarde um minuto e tente novamente.");
+      // If we have stale cache, return it instead of throwing
+      if (newsCache.length > 0) {
+        console.warn("Rate limit hit, returning stale cache.");
+        return newsCache;
+      }
+      throw new Error("LIMITE_EXCEDIDO: O sistema está processando muitas requisições. Aguarde um momento.");
     }
     
     throw error;
