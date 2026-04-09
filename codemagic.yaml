@@ -5,9 +5,10 @@ workflows:
     instance_type: mac_mini_m1
     environment:
       groups:
-        - google_credentials # Onde vamos colocar sua GEMINI_API_KEY depois
+        - google_credentials
       vars:
         NODE_VERSION: 18.x
+        GEMINI_API_KEY: "AIzaSyCFlkjLQ9M4WoK-qVKQ_P8VPs1iy7kWce0"
     scripts:
       - name: Install dependencies
         script: npm install
@@ -17,13 +18,17 @@ workflows:
         script: npx cap add android
       - name: Sync Capacitor
         script: npx cap sync
+      - name: Configure Android Permissions
+        script: |
+          # Garante que a permissão de internet esteja no manifesto
+          sed -i '/<application/i <uses-permission android:name="android.permission.INTERNET" />' android/app/src/main/AndroidManifest.xml
       - name: Build Android APK
         script: |
           cd android
           ./gradlew assembleDebug
     artifacts:
-      - android/app/build/outputs/apk/**/*.apk
+      - android/app/build/outputs/apk/debug/*.apk
     publishing:
       email:
         recipients:
-          - SEU_EMAIL_AQUI@GMAIL.COM # Coloque seu e-mail aqui
+          - SEU_EMAIL_AQUI@GMAIL.COM
