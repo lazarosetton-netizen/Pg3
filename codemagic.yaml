@@ -11,22 +11,28 @@ workflows:
         GEMINI_API_KEY: "AIzaSyCFlkjLQ9M4WoK-qVKQ_P8VPs1iy7kWce0"
     scripts:
       - name: Install dependencies
-        script: npm install
+        script: |
+          # Limpa o cache e força a instalação de todas as bibliotecas do projeto
+          npm install --force
       - name: Build Web Project
-        script: npm run build
+        script: |
+          # Compila o React/Vite para a pasta dist
+          npm run build
       - name: Initialize Capacitor Android
         script: |
+          # Adiciona a plataforma Android e copia os arquivos do build
           npx cap add android
           npx cap copy android
       - name: Configure Android Permissions
         script: |
-          # Adiciona permissão de internet se não existir
+          # Garante que o APK tenha acesso à internet para ler as notícias
           MANIFEST="android/app/src/main/AndroidManifest.xml"
-          if ! grep -q "android.permission.INTERNET" "$MANIFEST"; then
+          if [ -f "$MANIFEST" ]; then
             sed -i '/<application/i \    <uses-permission android:name="android.permission.INTERNET" />' "$MANIFEST"
           fi
       - name: Build Android APK
         script: |
+          # Entra na pasta android, dá permissão ao gradlew e gera o APK
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
@@ -35,4 +41,4 @@ workflows:
     publishing:
       email:
         recipients:
-          - SEU_EMAIL_AQUI@GMAIL.COM
+          - SEU_EMAIL_AQUI@GMAIL.COM # Troque pelo seu e-mail real
