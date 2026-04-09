@@ -54,6 +54,13 @@ export function HomePage() {
 
   useEffect(() => {
     loadNews();
+    
+    // Background polling every 2 minutes
+    const interval = setInterval(() => {
+      loadNews(true);
+    }, 2 * 60 * 1000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const handleScroll = () => {
@@ -75,10 +82,20 @@ export function HomePage() {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-blue-100 px-6 py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-2">
-          <div className="bg-blue-600 p-2 rounded-lg">
+          <div className="bg-blue-600 p-2 rounded-lg relative">
             <Newspaper className="text-white" size={24} />
+            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+            </span>
           </div>
-          <h1 className="text-2xl font-black text-blue-900 tracking-tighter">PGNEWS</h1>
+          <div className="flex flex-col">
+            <h1 className="text-2xl font-black text-blue-900 tracking-tighter leading-none">PGNEWS</h1>
+            <span className="text-[10px] font-black text-red-600 uppercase tracking-widest flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"></span>
+              Ao Vivo
+            </span>
+          </div>
         </div>
         
         <div className="flex items-center gap-4">
@@ -99,6 +116,27 @@ export function HomePage() {
           </div>
         </div>
       </header>
+
+      {/* Breaking News Ticker */}
+      {news.length > 0 && (
+        <div className="bg-blue-900 text-white py-2 overflow-hidden whitespace-nowrap border-b border-blue-800">
+          <div className="flex animate-marquee items-center gap-8">
+            <span className="bg-red-600 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ml-4">Urgente</span>
+            {news.slice(0, 3).map((item) => (
+              <span key={`ticker-${item.id}`} className="text-sm font-bold tracking-tight">
+                {item.title} • {item.time}
+              </span>
+            ))}
+            {/* Duplicate for seamless loop */}
+            <span className="bg-red-600 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ml-4">Urgente</span>
+            {news.slice(0, 3).map((item) => (
+              <span key={`ticker-dup-${item.id}`} className="text-sm font-bold tracking-tight">
+                {item.title} • {item.time}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <main className="max-w-7xl mx-auto px-6 py-8">
         {/* Refresh Indicator */}

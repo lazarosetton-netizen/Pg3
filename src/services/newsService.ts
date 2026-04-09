@@ -6,7 +6,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 // Persistent cache using localStorage
 const CACHE_KEY = "pgnews_cache";
 const CACHE_TIME_KEY = "pgnews_cache_time";
-const CACHE_DURATION = 60 * 60 * 1000; // 1 hour cache
+const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes cache
 
 const getCachedNews = (): NewsItem[] => {
   try {
@@ -51,7 +51,8 @@ export async function fetchNews(beforeDate?: string, retryCount = 0, forceRefres
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `DATA/HORA ISRAEL: ${now}.
-      ${beforeDate ? `NOTÍCIAS ANTES DE: ${beforeDate}.` : "Pesquise as 5 notícias mais recentes"} sobre Israel nos sites: ${NEWS_SITES.join(", ")}. 
+      ${beforeDate ? `NOTÍCIAS ANTES DE: ${beforeDate}.` : "Pesquise as 5 notícias mais RECENTES e de ÚLTIMA HORA (BREAKING NEWS) publicadas nos ÚLTIMOS MINUTOS"} sobre Israel nos sites: ${NEWS_SITES.join(", ")}. 
+      Priorize fatos ocorridos agora ou há pouquíssimo tempo.
       Para cada uma:
       1. Tradução detalhada (PT-BR).
       2. Resumo.
