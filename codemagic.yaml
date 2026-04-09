@@ -2,7 +2,7 @@ workflows:
   android-apk:
     name: PGNEWS APK Build
     max_build_duration: 30
-    instance_type: linux_x2
+    instance_type: linux # Máquina padrão do plano gratuito
     environment:
       groups:
         - google_credentials
@@ -12,27 +12,22 @@ workflows:
     scripts:
       - name: Install dependencies
         script: |
-          # Limpa o cache e força a instalação de todas as bibliotecas do projeto
           npm install --force
       - name: Build Web Project
         script: |
-          # Compila o React/Vite para a pasta dist
           npm run build
       - name: Initialize Capacitor Android
         script: |
-          # Adiciona a plataforma Android e copia os arquivos do build
-          npx cap add android
+          npx cap add android || true
           npx cap copy android
       - name: Configure Android Permissions
         script: |
-          # Garante que o APK tenha acesso à internet para ler as notícias
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           if [ -f "$MANIFEST" ]; then
             sed -i '/<application/i \    <uses-permission android:name="android.permission.INTERNET" />' "$MANIFEST"
           fi
       - name: Build Android APK
         script: |
-          # Entra na pasta android, dá permissão ao gradlew e gera o APK
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
@@ -41,4 +36,4 @@ workflows:
     publishing:
       email:
         recipients:
-          - SEU_EMAIL_AQUI@GMAIL.COM # Troque pelo seu e-mail real
+          - SEU_EMAIL_AQUI@GMAIL.COM
