@@ -11,7 +11,7 @@ workflows:
     scripts:
       - name: Set environment variables
         script: |
-          echo "GEMINI_API_KEY=$GEMINI_API_KEY" > .env.local
+          echo AIzaSyB5mKB-_7a44drhTPg9PvwqfBhCyOALrlY > .env.local
 
       - name: Install dependencies
         script: npm install --force
