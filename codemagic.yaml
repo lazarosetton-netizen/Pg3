@@ -3,19 +3,40 @@ workflows:
     name: PGNEWS APK Build
     instance_type: linux
     max_build_duration: 60
+
+    environment:
+      vars:
+        GEMINI_API_KEY: $GEMINI_API_KEY
+
     scripts:
+      - name: Set environment variables
+        script: |
+          echo "GEMINI_API_KEY=$GEMINI_API_KEY" > .env.local
+
       - name: Install dependencies
         script: npm install --force
+
       - name: Build Web Project
         script: npm run build
+
+      - name: Sync Capacitor
+        script: npx cap sync android
+
+      - name: Set Gradle permissions
+        script: chmod +x android/gradlew
+
       - name: Build Android APK
         script: |
-          npx cap sync android
           cd android
           ./gradlew assembleDebug
+
     artifacts:
       - android/app/build/outputs/apk/debug/*.apk
+
     publishing:
       email:
         recipients:
           - lazarosetton@gmail.com
+        notify:
+          success: true
+          failure: true
