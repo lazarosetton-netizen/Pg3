@@ -1,7 +1,6 @@
 workflows:
   android-apk:
     name: PGNEWS APK Build
-    instance_type: linux
     max_build_duration: 60
 
     environment:
@@ -11,7 +10,7 @@ workflows:
     scripts:
       - name: Set environment variables
         script: |
-          echo AIzaSyB5mKB-_7a44drhTPg9PvwqfBhCyOALrlY > .env.local
+          echo "GEMINI_API_KEY=$GEMINI_API_KEY" > .env.local
 
       - name: Install dependencies
         script: npm install --force
