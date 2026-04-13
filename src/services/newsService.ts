@@ -1,4 +1,4 @@
-        ```typescript
+```typescript
 import { GoogleGenAI, Type } from "@google/genai";
 import { NewsItem } from "../types";
 
@@ -32,11 +32,7 @@ const setCachedNews = (news: NewsItem[]) => {
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-const NEWS_SITES = [
-  "timesofisrael.com",
-  "ynetnews.com",
-  "i24news.tv"
-];
+const NEWS_SITES = ["timesofisrael.com", "ynetnews.com", "i24news.tv"];
 
 export async function fetchNews(beforeDate?: string, retryCount = 0, forceRefresh = false): Promise<NewsItem[]> {
   if (!forceRefresh && !beforeDate) {
@@ -45,22 +41,14 @@ export async function fetchNews(beforeDate?: string, retryCount = 0, forceRefres
   }
 
   const now = new Date().toLocaleString("pt-BR", { timeZone: "Israel" });
-  
+  const sitesStr = NEWS_SITES.join(", ");
+  const dateContext = beforeDate ? "NEWS BEFORE: " + beforeDate : "Search the 5 most recent BREAKING NEWS in the last minutes";
+  const prompt = "ISRAEL TIME: " + now + ". " + dateContext + " about Israel on sites: " + sitesStr + ". For each: 1. Translation PT-BR. 2. Summary. 3. Original URL. 4. Date/Time DD/MM/YYYY HH:MM. 5. Pro-Israel geopolitical comment. 6. Source. 7. ID. Return JSON array.";
+
   try {
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
-      contents: `DATA/HORA ISRAEL: ${now}.
-      ${beforeDate ? `NOTÍCIAS ANTES DE: ${beforeDate}.` : "Pesquise as 5 notícias mais RECENTES e de ÚLTIMA HORA (BREAKING NEWS) publicadas nos ÚLTIMOS MINUTOS"} sobre Israel nos sites: ${NEWS_SITES.join(", ")}. 
-      Priorize fatos ocorridos agora ou há pouquíssimo tempo.
-      Para cada uma:
-      1. Tradução detalhada (PT-BR).
-      2. Resumo.
-      3. URL original.
-      4. Data/Hora (DD/MM/AAAA HH:MM).
-      5. Comentário geopolítico PRÓ-ISRAEL (soberania) com LÓGICA e FATOS.
-      6. Fonte.
-      7. ID (hash URL).
-      Retorne JSON (array).`,
+      contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
@@ -86,28 +74,22 @@ export async function fetchNews(beforeDate?: string, retryCount = 0, forceRefres
     });
 
     const news = JSON.parse(response.text || "[]") as NewsItem[];
-    
     if (!beforeDate && news.length > 0) {
       setCachedNews(news);
     }
-    
     return news;
   } catch (error: any) {
-    console.error(`Error fetching news (attempt ${retryCount + 1}):`, error);
-    
+    console.error("Error fetching news attempt " + (retryCount + 1), error);
     const isRateLimit = error?.status === "RESOURCE_EXHAUSTED" || error?.message?.includes("429") || error?.message?.includes("quota");
-    
     if (isRateLimit && retryCount < 2) {
       await sleep(Math.pow(2, retryCount) * 3000);
       return fetchNews(beforeDate, retryCount + 1);
     }
-    
     if (isRateLimit) {
       const cached = getCachedNews();
       if (cached.length > 0) return cached;
       throw new Error("LIMITE_EXCEDIDO: Tente novamente em instantes.");
     }
-    
     throw error;
   }
 }
