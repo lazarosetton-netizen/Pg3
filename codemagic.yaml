@@ -5,11 +5,12 @@ workflows:
 
     environment:
       vars:
-        GEMINI_API_KEY: AIzaSyCiSCxwFkWjWc62G1yCKzLvaSLDqBaT26o
+        GEMINI_API_KEY: AIzaSyCiSCxWFkWjWc62G1yCKzLvaSLDqBaT26o
+
     scripts:
       - name: Set environment variables
         script: |
-          echo "GEMINI_API_KEY=AIzaSyCiSCxwFkWjWc62G1yCKzLvaSLDqBaT26o" > .env.local
+          echo "GEMINI_API_KEY=AIzaSyCiSCxWFkWjWc62G1yCKzLvaSLDqBaT26o" > .env.local
 
       - name: Install dependencies
         script: npm install --force
