@@ -1,4 +1,3 @@
-```typescript
 import { GoogleGenAI, Type } from "@google/genai";
 import { NewsItem } from "../types";
 
@@ -93,4 +92,3 @@ export async function fetchNews(beforeDate?: string, retryCount = 0, forceRefres
     throw error;
   }
 }
-```
