@@ -1,12 +1,12 @@
+        ```typescript
 import { GoogleGenAI, Type } from "@google/genai";
 import { NewsItem } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-// Persistent cache using localStorage
 const CACHE_KEY = "pgnews_cache";
 const CACHE_TIME_KEY = "pgnews_cache_time";
-const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes cache
+const CACHE_DURATION = 2 * 60 * 1000;
 
 const getCachedNews = (): NewsItem[] => {
   try {
@@ -39,7 +39,6 @@ const NEWS_SITES = [
 ];
 
 export async function fetchNews(beforeDate?: string, retryCount = 0, forceRefresh = false): Promise<NewsItem[]> {
-  // Use persistent cache if available
   if (!forceRefresh && !beforeDate) {
     const cached = getCachedNews();
     if (cached.length > 0) return cached;
@@ -49,7 +48,7 @@ export async function fetchNews(beforeDate?: string, retryCount = 0, forceRefres
   
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.0-flash",
       contents: `DATA/HORA ISRAEL: ${now}.
       ${beforeDate ? `NOTÍCIAS ANTES DE: ${beforeDate}.` : "Pesquise as 5 notícias mais RECENTES e de ÚLTIMA HORA (BREAKING NEWS) publicadas nos ÚLTIMOS MINUTOS"} sobre Israel nos sites: ${NEWS_SITES.join(", ")}. 
       Priorize fatos ocorridos agora ou há pouquíssimo tempo.
@@ -112,3 +111,4 @@ export async function fetchNews(beforeDate?: string, retryCount = 0, forceRefres
     throw error;
   }
 }
+```
