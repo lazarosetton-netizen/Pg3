@@ -22,13 +22,17 @@ jobs:
       - name: Instalar dependências
         run: npm install
 
+      - name: Instalar Capacitor
+        run: |
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+
       - name: Build do projeto React
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: npm run build
 
-      - name: Instalar Capacitor CLI
-        run: npm install -g @capacitor/cli
+      - name: Adicionar plataforma Android
+        run: npx cap add android || true
 
       - name: Sincronizar Capacitor com Android
         run: npx cap sync android
