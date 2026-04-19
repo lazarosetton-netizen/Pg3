@@ -1,4 +1,4 @@
-name: Build Android APK
+ name: Build Android APK
 
 on:
   push:
@@ -29,14 +29,14 @@ jobs:
         run: npm install
 
       - name: Instalar Capacitor
-        run: npm install @capacitor/core @capacitor/cli @capacitor/android
+        run: npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
 
       - name: Build do projeto React
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: npm run build
 
-      - name: Remover pasta android incompleta
+      - name: Remover pasta android
         run: rm -rf android
 
       - name: Adicionar plataforma Android
@@ -44,6 +44,19 @@ jobs:
 
       - name: Sincronizar Capacitor com Android
         run: npx cap sync android
+
+      - name: Corrigir conflito Kotlin no build.gradle
+        run: |
+          cat >> android/app/build.gradle << 'EOF'
+
+          configurations.all {
+            resolutionStrategy {
+              force 'org.jetbrains.kotlin:kotlin-stdlib:1.9.0'
+              force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.0'
+              force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.0'
+            }
+          }
+          EOF
 
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v3
