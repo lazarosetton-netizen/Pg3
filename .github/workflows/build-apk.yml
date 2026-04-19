@@ -19,29 +19,31 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
       - name: Instalar dependências
         run: npm install
 
       - name: Instalar Capacitor
-        run: |
-          npm install @capacitor/core @capacitor/cli @capacitor/android
+        run: npm install @capacitor/core @capacitor/cli @capacitor/android
 
       - name: Build do projeto React
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: npm run build
 
+      - name: Remover pasta android incompleta
+        run: rm -rf android
+
       - name: Adicionar plataforma Android
-        run: npx cap add android || true
+        run: npx cap add android
 
       - name: Sincronizar Capacitor com Android
         run: npx cap sync android
-
-      - name: Configurar Java 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
 
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v3
