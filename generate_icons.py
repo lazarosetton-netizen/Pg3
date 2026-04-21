@@ -1,8 +1,7 @@
 from PIL import Image
 import os
 
-img = Image.open("public/icon.png").convert("RGBA")
-
+img = Image.open("icon.png").convert("RGBA")
 sizes = {
     "android/app/src/main/res/mipmap-mdpi/ic_launcher.png": 48,
     "android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png": 48,
