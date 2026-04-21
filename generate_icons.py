@@ -1,8 +1,7 @@
 from PIL import Image
 import os
 import shutil
-
-img = Image.open("icon.png").convert("RGBA")
+img = Image.open("Icon.png").convert("RGBA")
 
 # Caminhos dos icones do Capacitor
 sizes = {
