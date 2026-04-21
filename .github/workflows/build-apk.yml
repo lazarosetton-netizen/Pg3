@@ -48,6 +48,29 @@ jobs:
       - name: Sincronizar Capacitor com Android
         run: npx cap sync android
 
+      - name: Gerar ícones do app
+        run: |
+          pip install Pillow -q
+          python3 -c "
+from PIL import Image
+import os
+img = Image.open('public/icon.png').convert('RGBA')
+sizes = {
+  'android/app/src/main/res/mipmap-mdpi/ic_launcher.png': 48,
+  'android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png': 48,
+  'android/app/src/main/res/mipmap-hdpi/ic_launcher.png': 72,
+  'android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png': 72,
+  'android/app/src/main/res/mipmap-xhdpi/ic_launcher.png': 96,
+  'android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png': 96,
+  'android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png': 144,
+  'android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png': 144,
+  'android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png': 192,
+  'android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png': 192,
+}
+[img.resize((s,s), Image.LANCZOS).save(p) for p,s in sizes.items()]
+print('Icones gerados!')
+"
+
       - name: Corrigir conflito Kotlin no build.gradle
         run: |
           cat >> android/app/build.gradle << 'EOF'
